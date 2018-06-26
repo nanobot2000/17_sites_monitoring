@@ -13,6 +13,13 @@ def get_command_line_args():
         help='full path to the file with urls',
         required=True
     )
+    parser.add_argument(
+        '-d',
+        '--days',
+        help='check if the domain expires after the specified number of days',
+        default=30,
+        type=int,
+    )
     args = parser.parse_args()
     return args
 
@@ -23,14 +30,14 @@ def load_urls4check(path):
     return [url.strip() for url in urls]
 
 
-def is_server_respond_with_200(url):
+def is_server_respond_with_ok(url):
     try:
         return requests.get(
             url,
             timeout=(10, 10)
-        ).status_code == requests.codes.ok
+        ).ok
     except requests.exceptions.RequestException:
-            return False
+        return False
 
 
 def is_expiry_date_close(expiration_date, min_expiration_period):
@@ -49,16 +56,17 @@ def get_domain_expiration_date(domain_name):
         return expiration_date
 
 
-def print_site_health(url, server_response, expiration_date):
+def print_site_health(url, server_response, expiration_date, min_expiration_period):
     print('Checking {}:'.format(url))
     print('Server respond with 200: {}'.format(server_response))
     if expiration_date is None:
         print('No expiry date for {}'.format(url))
     else:
-        print('Expiring in a month: {}\n'.format(
+        print('Expiring in {} days: {}\n'.format(
+            min_expiration_period,
             is_expiry_date_close(
                 expiration_date,
-                min_expiration_period=31
+                min_expiration_period=min_expiration_period
             )
         ))
 
@@ -69,5 +77,5 @@ if __name__ == '__main__':
     for url in loaded_urls:
         domain_name = urlparse(url).netloc
         domain_expiration_date = get_domain_expiration_date(domain_name)
-        server_response = is_server_respond_with_200(url)
-        print_site_health(url, server_response, domain_expiration_date)
+        server_response = is_server_respond_with_ok(url)
+        print_site_health(url, server_response, domain_expiration_date, args.days)
