@@ -25,7 +25,10 @@ def load_urls4check(path):
 
 def is_server_respond_with_200(url):
     try:
-        return requests.get(url, timeout=(10, 10)).status_code == requests.codes.ok
+        return requests.get(
+            url,
+            timeout=(10, 10)
+        ).status_code == requests.codes.ok
     except requests.exceptions.RequestException:
             return False
 
@@ -47,10 +50,10 @@ def get_domain_expiration_date(domain_name):
 
 
 def print_site_health(url, server_response, expiration_date):
-    print(f'Checking {url}:')
-    print(f'Server respond with 200: {server_response}')
+    print('Checking {}:'.format(url))
+    print('Server respond with 200: {}'.format(server_response))
     if expiration_date is None:
-        print(f'No expiry date for {url}')
+        print('No expiry date for {}'.format(url))
     else:
         print('Expiring in a month: {}\n'.format(
             is_expiry_date_close(
